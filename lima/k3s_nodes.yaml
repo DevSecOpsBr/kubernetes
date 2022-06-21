@@ -1,0 +1,60 @@
+images:
+# Try to use release-yyyyMMdd image if available. Note that release-yyyyMMdd will be removed after several months.
+- location: "https://cloud-images.ubuntu.com/releases/22.04/release-20220420/ubuntu-22.04-server-cloudimg-amd64.img"
+  arch: "x86_64"
+  digest: "sha256:de5e632e17b8965f2baf4ea6d2b824788e154d9a65df4fd419ec4019898e15cd"
+- location: "https://cloud-images.ubuntu.com/releases/22.04/release-20220420/ubuntu-22.04-server-cloudimg-arm64.img"
+  arch: "aarch64"
+  digest: "sha256:66224c7fed99ff5a5539eda406c87bbfefe8af6ff6b47d92df3187832b5b5d4f"
+# Fallback to the latest release image.
+# Hint: run `limactl prune` to invalidate the cache
+- location: "https://cloud-images.ubuntu.com/releases/22.04/release/ubuntu-22.04-server-cloudimg-amd64.img"
+  arch: "x86_64"
+- location: "https://cloud-images.ubuntu.com/releases/22.04/release/ubuntu-22.04-server-cloudimg-arm64.img"
+  arch: "aarch64"
+
+cpus: 1
+
+memory: "8GiB"
+
+disk: "50GiB"
+
+# Mounts are disabled in this example, but can be enabled optionally.
+mounts: []
+
+# containerd is managed by k3s, not by Lima, so the values are set to false here.
+containerd:
+  system: false
+  user: false
+
+networks:
+- lima: __IFACE__
+  # Interface name, defaults to "lima0", "lima1", etc.
+  interface: "lima0"
+
+provision:
+- mode: system
+  script: |
+    #!/bin/bash
+    export IFACE="lima0"
+    export LIMA0=$(ip addr show lima0 |egrep 'inet '| awk '{print $2}'| cut -d '/' -f1)
+    curl -sfL https://get.k3s.io | __TOKEN__ __REPLACEME__ sh -s - __ADVERTISEME__
+- mode: system
+  script: |
+    #!/bin/bash
+    curl https://baltocdn.com/helm/signing.asc | apt-key add -
+    apt-get install apt-transport-https --yes
+    echo "deb https://baltocdn.com/helm/stable/debian/ all main" | tee /etc/apt/sources.list.d/helm-stable-debian.list
+    sudo apt-get update
+    sudo apt-get install helm
+
+probes:
+
+message: |
+  To run `kubectl` on the host (assumes kubectl is installed):
+    mkdir -p "{{.Dir}}/conf"
+    export KUBECONFIG="{{.Dir}}/conf/kubeconfig.yaml"
+    limactl shell {{.Name}} sudo cat /etc/rancher/k3s/k3s.yaml > ~/.kube/config
+    limactl shell {{.Name}} sudo kubectl config view --raw --minify
+    limactl shell {{.Name}} sudo kubectl get node -owide
+    ...
