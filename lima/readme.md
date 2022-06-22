@@ -52,7 +52,7 @@ lima-node-2      Ready    <none>                      46s     v1.22.8+k3s1   192
 lima-node-3      Ready    <none>                      4s      v1.22.8+k3s1   192.168.2.219   192.168.2.219   Ubuntu 22.04 LTS   5.15.0-37-generic   containerd://1.5.10-k3s1
 ```
 
-Have you linked? Then go ahead and clone or fork the repo.
+Have you liked? Then go ahead and clone or fork the repo.
 
 See you in the next one.
 
