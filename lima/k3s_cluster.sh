@@ -20,14 +20,14 @@ main() {
 
   if ! [[ $CLUSTER_NAME =~ $is_num ]]; then
     echo -e "Here is what I am going to do        \n"
-    echo -e "Creating cluster: $CLUSTER_NAME     🚀  \n"
+    echo -e "Creating cluster: $CLUSTER_NAME     🚀 \n"
     echo -e "Control-planes:  $MANAGER_NODES      🎛️ \n"
     echo -e "Nodes: $WORKER_NODES                📺 \n"
 
     deploy_masters
 
   else
-    echo "‼️  You must specify a cluster name"
+    echo "‼️  You must specify a valid cluster name  ‼️"
     echo '💡 ./k3s_cluster.sh <cluster-name> <num-manager> <num-nodes> 📌'
     exit 101
   fi
@@ -39,18 +39,16 @@ deploy_masters() {
   MASTER_INIT="INSTALL_K3S_VERSION=${VERSION} K3S_LB_SERVER_PORT=6444 K3S_RESOLV_CONF=\/run\/systemd\/resolve\/resolv.conf INSTALL_K3S_EXEC=--cluster-init"
   ADVERTISE='--node-external-ip ${LIMA0} --node-ip ${LIMA0} --bind-address ${LIMA0} --tls-san ${LIMA0} -flannel-iface ${IFACE} --disable=traefik --disable=servicelb --node-label ingress=controller'
 
-  echo "Deploying manager nodes: ${MANAGER_NODES}"
-
   for ((m=1;m<=$MANAGER_NODES;m++));
     do
         if [ $m -eq 1 ]; then
-          echo "Creating master node $m ..."
+          echo "Creating manager node $m ...... 🔄"
           sed -e "s/__IFACE__/${IFACE}/" -e "s/__TOKEN__/${K3S_TOKEN}/" -e "s/__REPLACEME__/${MASTER_INIT}/" -e "s/__ADVERTISEME__/${ADVERTISE}/" $MANAGER_FILE > $m-$MANAGER_FILE
           $LIMACTL validate $m-$MANAGER_FILE
           if [[ $? -eq 0 ]]; then
             echo "Template is valid ..."
             $LIMACTL start --name manager-$m $m-$MANAGER_FILE
-            echo "Master node created: $m"
+            echo "Manager node created: $m ...... ✅"
           else
             echo "Template is not valid!"
             exit 404
@@ -58,12 +56,12 @@ deploy_masters() {
           echo "Manager node created: $m"
           $LIMACTL shell manager-$m sudo kubectl get nodes -owide
 
-          echo "Exporting kubeconfig file ..."
+          echo "Exporting kubeconfig file ...... ⚙️"
           KUBECONFIG="$HOME/.kube/$CLUSTER_NAME.yaml"
           limactl shell manager-$m sudo kubectl config rename-context default $CLUSTER_NAME
           limactl shell manager-$m sudo cat /etc/rancher/k3s/k3s.yaml > $KUBECONFIG
 
-          echo "Gathering manager information ..."
+          echo "Gathering manager information ...... ⚙️"
           sleep 15
           MANAGER_IPADDR=$(limactl shell manager-$m sudo kubectl get nodes -owide | grep "192.168." | awk '{print $6}')
           MANAGERS_JOIN="INSTALL_K3S_VERSION=${VERSION} INSTALL_K3S_EXEC=server K3S_URL=https:\/\/${MANAGER_IPADDR}:6443"
@@ -74,7 +72,7 @@ deploy_masters() {
           sed -e "s/__IFACE__/${IFACE}/" -e "s/__TOKEN__/${K3S_TOKEN}/" -e "s/__REPLACEME__/${MANAGERS_JOIN}/" -e "s/__ADVERTISEME__/${ADVERTISE}/" $MANAGER_FILE > $m-$MANAGER_FILE
           $LIMACTL validate $m-$MANAGER_FILE
           if [[ $? -eq 0 ]]; then
-            echo "Template is valid ..."
+            echo "Template is valid ...... ✅"
             $LIMACTL start --name manager-$m $m-$MANAGER_FILE
             echo "Manager node created: $m"
           else
@@ -99,18 +97,18 @@ deploy_nodes() {
   for ((n=0;n<=$WORKER_NODES;n++));
     do
       if [ $n -ge 1 ]; then
-        echo "Creating nodes $n ..."
+        echo "Creating nodes $n ...... 🔄"
         sed -e "s/__IFACE__/${IFACE}/" -e "s/__TOKEN__/${K3S_TOKEN}/" -e "s/__REPLACEME__/${NODE_JOIN}/" -e "s/__ADVERTISEME__/${ADVERTISE}/" $NODE_FILE > $n-$NODE_FILE
         $LIMACTL validate $n-$NODE_FILE
         if [[ $? -eq 0 ]]; then
-          echo "Template is valid ..."
+          echo "Template is valid ...... ✅"
           $LIMACTL start --name node-$n $n-$NODE_FILE
           echo "Node node created: $n"
         else
           echo "Template is not valid!"
           exit 404
         fi
-        echo "Nodes node created: $n"
+        echo "Node created: $n ...... ✅"
         $LIMACTL shell manager-1 sudo kubectl get nodes -owide
       fi
   done
