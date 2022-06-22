@@ -14,6 +14,17 @@ I used to have a multi-node cluster on a macOS Intel processor running in Virtua
 
 I have created a simple shell script to manage the token creation and join control-planes and nodes to the cluster. 
 
+```(shell)
+./k3s_cluster.sh glaedr 3 3
+```
+
+Outcome:
+
+```(shell)
+Creating cluster: glaedr     🚀
+Control-planes:  3           🎛️
+Nodes: 3                     📺
+```
 
 PS: The shell script is not the focus but just a simple way to create lima-vms and the cluster.  
 
@@ -22,9 +33,17 @@ PS: The shell script is not the focus but just a simple way to create lima-vms a
 Networking: I have configured the Kubernetes cluster to use my LAN networks, which means, the cluster is accessible to all devices/computers on your LAN.
 DNS: I needed to tell to kubelet to read K3S_RESOLV_CONF=/run/systemd/resolve/resolv.conf instead of /etc/resolv.conf. Reference: known-issues
 
-Cluster is alive
+### Cluster is alive
+
+At this point you need to export the glaedr.yaml config file generated under $HOME/.kube/ folder.
 
 ```(shell)
+export KUBECONFIG=$HOME/.kube/glaedr.yaml
+```
+
+```(shell)
+kubectl get node -owide
+
 NAME             STATUS   ROLES                       AGE     VERSION        INTERNAL-IP     EXTERNAL-IP     OS-IMAGE           KERNEL-VERSION      CONTAINER-RUNTIME
 lima-manager-1   Ready    control-plane,etcd,master   5m27s   v1.22.8+k3s1   192.168.2.101   192.168.2.101   Ubuntu 22.04 LTS   5.15.0-37-generic   containerd://1.5.10-k3s1
 lima-manager-2   Ready    control-plane,etcd,master   2m26s   v1.22.8+k3s1   192.168.2.102   192.168.2.102   Ubuntu 22.04 LTS   5.15.0-37-generic   containerd://1.5.10-k3s1
