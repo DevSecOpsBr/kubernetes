@@ -12,8 +12,8 @@ jobs:
       id: terrascan
       uses: tenable/terrascan-action@main
       with:
-        iac_type: 'terraform'
-        iac_version: 'v14'
+        iac_type: 'k8s'
+        iac_version: 'v1'
         policy_type: 'all'
         only_warn: true
         sarif_upload: true
