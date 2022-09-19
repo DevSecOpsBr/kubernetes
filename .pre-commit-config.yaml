@@ -1,0 +1,6 @@
+repos:
+    - repo: https://github.com/tenable/terrascan
+        rev: <COMMIT/VERSION>
+        hooks:
+        - id: terraform-pre-commit
+            args: [ '-i k8s']
