@@ -1,0 +1,9 @@
+repos:
+    - repo: https://github.com/tenable/terrascan
+      name: terrascan-vulnerabilities
+      description: 'Scanning for vulnerabilities up front'
+      rev: v1.15.2
+      verbose: true
+      hooks:
+      - id: kubernetes-pre-commit
+        args: [ '-i k8s']
